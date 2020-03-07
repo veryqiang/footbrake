@@ -2,14 +2,15 @@
 
 
 ## Introduce
-FootBrake is a gui app that tries to do below things:
+FootBrake is a gui app that tries to do below things,
 
 - add media into Resolve, create timeline, render job...
 - select a render preset and render them out
 - copy the xml/aaf files in the source folder when finished 
 
-Perfect for those who grade on a Windows machine, and use a mac as ProRes dongle.
+**In as few clicks as possible**.
 
+Perfect for those who grade on a Windows machine, and use a mac as ProRes dongle.
 It remembers the input/output folders, you only need to set it up once.
 
 Tested working with Davinci Resolve 16.1.2 and 16.2, on macOS 10.15.1.
@@ -45,7 +46,7 @@ There are some dependencies not included in the script.
     export RESOLVE_SCRIPT_LIB="/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Libraries/Fusion/fusionscript.so"
     export PYTHONPATH="$PYTHONPATH:$RESOLVE_SCRIPT_API/Modules/
     ```
-4. Go to  copy a script named *python_get_resolve.py* that comes with Resolve into the same folder of *FootBrake.py*.
+4. Go to */Library/Application Support/Blackmagic Design/DaVinci Resolve*, copy a script named *python_get_resolve.py*, paste into the same folder of *FootBrake.py*.
 
 5. cd into the same folder of the script, and run:
     
