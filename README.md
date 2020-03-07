@@ -1,7 +1,5 @@
 # FootBrake 
 
-
-## Introduce
 FootBrake is a gui app that tries to do below things,
 
 - add media into Resolve, create timeline, render job...
@@ -46,11 +44,11 @@ There are some dependencies not included in the script.
     export RESOLVE_SCRIPT_LIB="/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Libraries/Fusion/fusionscript.so"
     export PYTHONPATH="$PYTHONPATH:$RESOLVE_SCRIPT_API/Modules/
     ```
-4. Go to */Library/Application Support/Blackmagic Design/DaVinci Resolve*, copy a script named *python_get_resolve.py*, paste into the same folder of *FootBrake.py*.
+4. Go to */Library/Application Support/Blackmagic Design/DaVinci Resolve*, copy a script named *python_get_resolve.py*, paste into the same folder of *footbrake.py*.
 
 5. cd into the same folder of the script, and run:
     
-        python3 ./FootBrake.py
+        python3 ./footbrake.py
 
 # Web Version
 
