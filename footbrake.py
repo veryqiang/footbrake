@@ -4,6 +4,7 @@ import shutil
 import datetime
 import time
 import yaml
+import threading
 from python_get_resolve import GetResolve
 
 
@@ -177,7 +178,7 @@ def refresh_folders(watch_path):
     """
     path_list = []
     for item in os.listdir(watch_path):
-        if os.path.isdir(os.path.join(watch_path, item)):
+        if os.path.isdir(os.path.join(watch_path, item)) and not item.startswith('.'):
             path_list.append(item)
     window['SOURCEPATHS'](path_list)
 
@@ -213,7 +214,7 @@ def update_render_status():
             # The status_table is a list of lists, the order corresponds to the 'headings' list
             status_table.append([
                 str(status.get('Idx', 'Unknown')), status.get('Name'),
-                status.get('JobStatus'), int(status.get('CompletionPercentage', 'NA')),
+                status.get('JobStatus'), status.get('CompletionPercentage', 'NA'),
                 str(datetime.timedelta(milliseconds=status.get('TimeTakenToRenderInMs', 0))).split('.', 2)[0]
             ])
         except:
@@ -281,8 +282,8 @@ def update_table_while_rendering():
     """
     while proj.IsRenderingInProgress():
         update_render_status()
-        # update info every 0.5 second
-        time.sleep(0.5)
+        # update info every 0.2 second
+        time.sleep(0.2)
         if copy_xml_flag:
             for k in pending_queue:
                 if k not in xml_copied:
@@ -339,7 +340,7 @@ if not resolve:
         'Cannot get Resolve API. \n Is Resolve open? '
         '\n Is "Davinci Resolve > Preference > System > General > External Scripting Using" set to "Local"?',
         title='Ahhh!!', keep_on_top=True, auto_close_duration=4,
-        line_width=40,font=('Default', 15))
+        line_width=40, font=('Default', 15))
     exit()
 
 pm = resolve.GetProjectManager()
@@ -409,13 +410,15 @@ folder_list = [[sg.Button('Refresh', font=('Futura', 18), size=(6, 1), pad=(3, (
                 sg.Button('Queue', font=('Futura', 18), size=(6, 1), pad=(3, (7, 7)),
                           key='QUEUE')]]
 
-job_status_frame = [[sg.Table([['' for col in range(6)]], headings=headings, key='TABLE',
-                              auto_size_columns=False, max_col_width=40, col_widths=[4, 31, 10, 6, 8], num_rows=28)],
-                    [sg.Button('Render', font=('Futura', 18), size=(6, 1), pad=(0, (9, 7)), key='RENDER'),
+job_status_frame = [[sg.Button('Abort', font=('Futura', 18), size=(6, 1), pad=((465, 0), (2, 5)),
+                               button_color=('#EE3550', '#475841'), key='ABORT')],
+                    [sg.Table([['' for col in range(6)]], headings=headings, key='TABLE',
+                              auto_size_columns=False, max_col_width=40, col_widths=[4, 31, 10, 6, 8], num_rows=26)],
+                    [sg.Button('Render', font=('Futura', 18), size=(6, 1), pad=(0, (7, 7)), key='RENDER'),
                      sg.Checkbox('Copy xml', key='COPYXML', default=copy_xml_flag, enable_events=True,
                                  font=('Futura', 15),
                                  pad=(20, 0)),
-                     sg.Button('Clear', font=('Futura', 18), size=(6, 1), pad=((253, 0), (9, 7)), key='CLEAR')
+                     sg.Button('Clear', font=('Futura', 18), size=(6, 1), pad=((248, 0), (7, 7)), key='CLEAR')
                      ]
                     ]
 
@@ -562,7 +565,8 @@ while True:
             elif pending_queue:
                 # finally submit the render list
                 proj.StartRendering(pending_queue)
-                update_table_while_rendering()
+                status_update_thread=threading.Thread(target=update_table_while_rendering,daemon=True)
+                status_update_thread.start()
                 finished_queue += pending_queue
                 pending_queue = []
                 xml_copied = []
@@ -576,6 +580,15 @@ while True:
             finished_queue = []
             window['TABLE']([])
             window.refresh()
+
+    if event == 'ABORT':
+        if proj.IsRenderingInProgress():
+            proj.StopRendering()
+            finished_queue += pending_queue
+            pending_queue = []
+            xml_copied = []
+            queue_paths = {}
+        update_table_while_rendering()
 
     if event == 'CLEAR':
         if proj.IsRenderingInProgress():
